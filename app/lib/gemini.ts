@@ -3,6 +3,7 @@
 import {
   FileState,
   GoogleGenAI,
+  MediaResolution,
   createPartFromUri,
   createUserContent,
 } from "@google/genai";
@@ -15,6 +16,7 @@ export type ProgressStage =
   | { stage: "done" };
 
 const INLINE_MAX_BYTES = 18 * 1024 * 1024; // 18MB safety threshold for inline base64
+const SAMPLING_FPS = 2; // bump from default 1fps so quick cuts and motion aren't undersampled
 
 async function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -64,11 +66,15 @@ export async function generatePromptFromVideo(opts: {
     const base64 = await fileToBase64(file);
     const result = await ai.models.generateContent({
       model,
+      config: { mediaResolution: MediaResolution.MEDIA_RESOLUTION_HIGH },
       contents: [
         {
           role: "user",
           parts: [
-            { inlineData: { mimeType: file.type || "video/mp4", data: base64 } },
+            {
+              inlineData: { mimeType: file.type || "video/mp4", data: base64 },
+              videoMetadata: { fps: SAMPLING_FPS },
+            },
             { text: VIDEO_TO_PROMPT_INSTRUCTION },
           ],
         },
@@ -92,13 +98,14 @@ export async function generatePromptFromVideo(opts: {
     throw new Error("Uploaded file is missing uri or mimeType.");
   }
 
+  const videoPart = createPartFromUri(ready.uri, ready.mimeType);
+  videoPart.videoMetadata = { fps: SAMPLING_FPS };
+
   onProgress?.({ stage: "generating" });
   const result = await ai.models.generateContent({
     model,
-    contents: createUserContent([
-      createPartFromUri(ready.uri, ready.mimeType),
-      VIDEO_TO_PROMPT_INSTRUCTION,
-    ]),
+    config: { mediaResolution: MediaResolution.MEDIA_RESOLUTION_HIGH },
+    contents: createUserContent([videoPart, VIDEO_TO_PROMPT_INSTRUCTION]),
   });
   onProgress?.({ stage: "done" });
   return extractText(result);
