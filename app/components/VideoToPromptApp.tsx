@@ -38,7 +38,12 @@ import {
 import { ApiKeyDialog } from "./ApiKeyDialog";
 
 const SEEGEN_BASE = "https://seegen.ai/app";
-const UTM = "?utm_source=video2prompt&utm_medium=github&utm_campaign=v2p";
+const UTM_PARAMS = {
+  utm_source: "imooooc",
+  utm_medium: "referral",
+  utm_campaign: "video-to-prompt",
+} as const;
+const UTM_QS = `?${new URLSearchParams(UTM_PARAMS).toString()}`;
 const GITHUB_URL = "https://github.com/imooooc/video-to-prompt";
 
 const ACCEPTED_TYPES = [
@@ -106,13 +111,8 @@ export function VideoToPromptApp() {
   }, [file]);
 
   const seegenLink = useMemo(() => {
-    if (!prompt) return SEEGEN_BASE + UTM;
-    const params = new URLSearchParams({
-      prompt,
-      utm_source: "video2prompt",
-      utm_medium: "github",
-      utm_campaign: "v2p",
-    });
+    if (!prompt) return SEEGEN_BASE + UTM_QS;
+    const params = new URLSearchParams({ prompt, ...UTM_PARAMS });
     return `${SEEGEN_BASE}?${params.toString()}`;
   }, [prompt]);
 
