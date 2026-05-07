@@ -6,6 +6,8 @@ Drop in a reference clip — a saved TikTok, an old shot of yours, a movie scene
 
 The whole pipeline runs in your browser. Your video goes directly from your laptop to Google with your own API key; nothing else is in the path.
 
+**Live demo:** <https://v2p-demo.vmoli.com>
+
 ## Why
 
 Video models like Veo 3, Sora 2, and Seedance 2.0 are getting good fast. The bottleneck has shifted — the hard part is no longer the rendering, it's writing a prompt that actually describes a scene the way a director would. If you can break a 12-second clip into four beats with the right camera language and the dialogue intact, you can recreate or remix anything you've seen. This tool does that work for you.
